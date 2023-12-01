@@ -3,8 +3,6 @@ import numpy as np
 import pytest
 
 
-
-
 def test_objective_function_expected_result():
      
      w = np.array([0.5, 0.5])

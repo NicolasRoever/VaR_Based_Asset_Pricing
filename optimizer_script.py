@@ -1,8 +1,9 @@
 from scipy.optimize import minimize
 from scipy.stats import norm
 import numpy as np
-import pytest 
-
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
+import pytest
 
 
 
@@ -62,16 +63,36 @@ def calculate_optimal_weights(returns, vcv_matrix, initial_wealth, var_quantile)
 
     return result.x
 
+def plot_variance_grid_asset_1(returns, vcv_matrix, initial_wealth, var_quantile):
+    variance_grid = np.linspace(vcv_matrix[0,0], 1.5 * vcv_matrix[1,1], 100)
+    results = []
+    
+    for variance in variance_grid:
+        vcv_matrix_update = vcv_matrix.copy()
+        vcv_matrix_update[0,0] = variance
+        w_1 = calculate_optimal_weights(returns, vcv_matrix_update, initial_wealth, var_quantile)
+        results.append(w_1[0])
+
+
+    return go.Scatter(x=variance_grid, y=results, mode='markers', name='Optimal Weight Asset 1 with changing Variance Asset 1')
+    
+
 
 
 # Check if the script is being run as the main program
 if __name__ == "__main__":
 
-    returns = np.array([1.1, 1.2])
-    vcv_matrix = np.array([[1.1, 0.5], [0.5, 1.5]])
+    returns = np.array([1.1, 1.15])
+    vcv_matrix = np.array([
+    [0.06, 0.025],  # Covariance between Asset A and Asset B
+    [0.025, 0.10]   # Variance of Asset B
+])
     initial_wealth = 100
-    var_quantile = 0.99
+    var_quantile = 0.999
 
-    optimal_weights = calculate_optimal_weights(returns, vcv_matrix, initial_wealth, var_quantile)
+    fig = go.Figure()
 
-    print(optimal_weights)
+    fig.add_trace(plot_variance_grid_asset_1(returns, vcv_matrix, initial_wealth, var_quantile))
+    
+    fig.show()
+
