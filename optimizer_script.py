@@ -5,10 +5,30 @@ import pytest
 
 
 
+
 def objective_function(w, returns, initial_wealth):
-        return - (w[0]* returns[0] + w[1] *returns[1]) * initial_wealth
+    return - (w[0]* returns[0] + w[1] *returns[1]) * initial_wealth
 
 
+def weight_sum_constraint(w):
+    return w[0] + w[1] - 1.0
+
+def expected_value_portfolio(w, returns, initial_wealth):
+    return (w[0]* returns[0] + w[1] *returns[1]) * initial_wealth
+
+def variance_portfolio(w, vcv_matrix):
+    return w.T @ vcv_matrix @ w
+
+def calculate_var(w, quantile, vcv_matrix, returns, initial_wealth):
+    variance = variance_portfolio(w, vcv_matrix)
+    expected_value_portfolio_number = expected_value_portfolio(w, returns, initial_wealth)
+    return np.sqrt(variance) * norm.ppf(quantile) + expected_value_portfolio_number
+
+
+def var_risk_constraint(w, quantile, vcv_matrix, returns, initial_wealth):
+    variance = variance_portfolio(w, vcv_matrix)
+    var = calculate_var(w, quantile, vcv_matrix, returns, initial_wealth)
+    return  var/norm.ppf(quantile) - variance  
 
 
 
@@ -28,18 +48,6 @@ def calculate_optimal_weights(returns, vcv_matrix, initial_wealth, var_quantile)
 
     """
 
-    #Define objective function
-
-    def objective_function(w, returns, initial_wealth):
-        return - (w[0]* returns[0] + w[1] *returns[1]) * initial_wealth
-
-
-    def weight_sum_constraint(w):
-        return w[0] + w[1] - 1.0
-
-
-    def var_risk_constraint(w, quantile, vcv_matrix, returns, initial_wealth):
-        return  ((np.sqrt(w.T @ vcv_matrix @ w) * norm.ppf(quantile) + (w[0] *returns[0] + w[1] *returns[1] * initial_wealth)))^2/norm.ppf(quantile) - (w.T @ vcv_matrix @ w)
 
     # Initial guess for the optimization
     initial_guess = [0.5, 0.5]
@@ -50,7 +58,7 @@ def calculate_optimal_weights(returns, vcv_matrix, initial_wealth, var_quantile)
 
     #Perform optimization
 
-    result = minimize(objective_function, initial_guess, constraints=constraints)
+    result = minimize(objective_function, initial_guess, constraints=constraints, args=(returns, initial_wealth))
 
     return result.x
 
