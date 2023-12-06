@@ -1,4 +1,4 @@
-from optimizer_script import objective_function_only_var, weight_sum_constraint, variance_portfolio, var_risk_constraint, calculate_var, expected_value_portfolio, calculate_optimal_weights, calculate_optimal_weights_markowitz
+from optimizer_script import objective_function_only_var, weight_sum_constraint, variance_portfolio, var_risk_constraint, calculate_var, expected_value_portfolio, calculate_optimal_weights, calculate_optimal_weights_markowitz, calculate_optimal_weights_markowitz_var
 import numpy as np
 import pytest
 
@@ -93,6 +93,24 @@ def test_calculate_optimal_weights_markowitz_expected_result():
      expected = np.array([0.67954546, 0.32045454])
 
      assert np.allclose(actual, expected)
+
+
+def test_calculate_optimal_weights_markowitz_var_expected_result():
+
+     returns = np.array([1.1, 1.15])
+     vcv_matrix = np.array([
+     [0.06, 0.025],  # Covariance between Asset A and Asset B
+     [0.025, 0.10]   # Variance of Asset B
+     ])
+     initial_wealth = 100
+     var_quantile = 0.999
+     risk_aversion = 2.0
+     actual = calculate_optimal_weights_markowitz_var(returns, vcv_matrix, initial_wealth, risk_aversion, var_quantile)
+     expected = np.array([0.67954546, 0.32045454])
+
+     assert np.allclose(actual, expected)
+
+
 
 
 
